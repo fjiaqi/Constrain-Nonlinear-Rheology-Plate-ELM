@@ -53,7 +53,6 @@ param_fdynmidr = 0.4
 param_fdynupr = 0.05
 
 output_dir = Path(f'/home/x-jqfang/scratch/model_2504/2d_A{A}_V{V}_Gw{Gw}_Ge{Ge}/')
-# output_dir = Path('./output/')
 data_dir = output_dir / 'data'
 figure_dir = output_dir / 'figures'
 var_dir = output_dir / 'vars'
@@ -124,15 +123,12 @@ mantle_dict     = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 3.5, 'disl_E': 532e3, 'disl_V': 10e-6, 'disl_A': 2.7695e4,
                     'shear_modulus_high': 60e9, 'shear_modulus_low': 60e9,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
 shear_zone_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
-                    # 'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'diff_E': 0e3, 'diff_V': 0e-6, 'diff_A': 1e24,
-                    # 'disl_n': 2.6, 'disl_E': 230e3, 'disl_V': 4e-6, 'disl_A': 1.6623e6,
                     'disl_n': 2.3, 'disl_E': 154e3, 'disl_V': 10e-6, 'disl_A': 1.6538e7,
                     'shear_modulus_high': param_Gsz, 'shear_modulus_low': param_Gsz,
                     'cohesion': 10e6, 'max_yield_stress': param_ymax }
@@ -140,9 +136,7 @@ shear_zone_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
 crust_dict      = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
-                    # 'diff_E': 0e3, 'diff_V': 0e-6, 'diff_A': 1e24,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 2.3, 'disl_E': 154e3, 'disl_V': 4e-6, 'disl_A': 1.6538e7,
                     'shear_modulus_high': param_Gsz, 'shear_modulus_low': param_Gsz,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
@@ -150,7 +144,6 @@ west_plate_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 3.5, 'disl_E': 532e3, 'disl_V': 10e-6, 'disl_A': 2.7695e4,
                     'shear_modulus_high': param_Gw, 'shear_modulus_low': param_Gw,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
@@ -158,7 +151,6 @@ east_plate_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 3.5, 'disl_E': 532e3, 'disl_V': 10e-6, 'disl_A': 2.7695e4,
                     'shear_modulus_high': param_Ge, 'shear_modulus_low': param_Ge,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
@@ -324,23 +316,16 @@ if(restart_step < -1):
         elif(zp >= shear_zone_bottom_z[idx]
             and zp <= slab_top_z[idx]
             and zp >= slab_front_z[idx]
-            # and zp >= east_lithos_bottom_coords.min()
             and zp >= -param_szzmax / reference_length
             and xp >= 0):
             materialIndex.data[idx] = shear_zone.index
         elif(xp >= ridge_loc
             and xp >= -param_wpxmax / reference_length
-            # and zp > west_lithos_bottom_z[idx]*0.5
             and zp > -west_crust_depth
-            # and zp < shear_zone_bottom_z[idx]):
             and xp < 0):
             materialIndex.data[idx] = west_crust.index
         elif(xp >= ridge_loc
-            # and zp >= west_lithos_bottom_z[idx]
-            # and zp >= slab_front_z[idx]
-            # and zp < shear_zone_bottom_z[idx]):
             and zp < shear_zone_bottom_z[idx]
-            # and zp >= east_lithos_bottom_z[idx]
             and zp >= -param_wpzmax / reference_length
             and xp >= -param_wpxmax / reference_length):
             materialIndex.data[idx] = west_plate.index
@@ -349,8 +334,6 @@ if(restart_step < -1):
             and zp > -east_crust_depth):
             materialIndex.data[idx] = east_crust.index
         elif(xp >= slab_top_x[idx] 
-            # and zp >= east_lithos_bottom_z[idx]):
-            # and zp >= east_lithos_bottom_z[idx]
             and zp >= -param_epzmax / reference_length
             and xp <= param_epxmax / reference_length):
             materialIndex.data[idx] = east_plate.index
@@ -525,14 +508,11 @@ strainRate = fn.tensor.symmetric( velocityField.fn_gradient )
 strainRate_2nd_Invariant = fn.tensor.second_invariant(strainRate)
 tiny_strain_rate = 1e-25 * reference_time
 slipVelocity = 2. * strainRate_2nd_Invariant * shear_zone_width
-# slipVelocityLocal = 2. * strainRate_2nd_Invariant * np.average([dxdydz_min[0], dxdydz_min[-1]])
 
 depth = fn.misc.max(-fn.input()[mesh.dim-1], 0.)
 lithostaticPressure = fn.misc.max(Rb*depth, 0.)
 trueLithostaticPressure = reference_density * gravity * depth*reference_length
 trueTemperature = reference_T0 + temperatureField * (reference_T1-reference_T0)
-# adiabatic = 0.3e-3 # K/m
-# trueTemperature = reference_T0 + temperatureField * (reference_T1-reference_T0) + adiabatic * depth*reference_length
 
 friction_st = param_fst
 friction_dyn = np.array([friction_st, friction_st, friction_st])
@@ -567,7 +547,6 @@ porePressureFactor = fn.branching.conditional( [ (materialIndex < shear_zone.ind
 
 normalStressLithos = (1. - porePressureFactor) * lithostaticPressure
 normal_pressure_shear_zone = 30e6 / reference_stress
-# normalStressShearZone = fn.misc.constant(normal_pressure_shear_zone)
 normalStressShearZone = fn.misc.min(normal_pressure_shear_zone, normalStressLithos)
 normalStressTransition = ((depth-factor_trans_depth[0])
                      / (factor_trans_depth[1]-factor_trans_depth[0])
@@ -578,14 +557,11 @@ normalStress = fn.branching.conditional( [ (materialIndex < shear_zone.index, no
                                             (depth <= factor_trans_depth[1], normalStressTransition),
                                             (True, normalStressLithos) ] )
 
-# truePressure = (1. - porePressureFactor) * trueLithostaticPressure
 truePressure = normalStress * reference_stress
 diffViscosity = diffA * fn.math.exp((diffE+truePressure*diffV) / (R_const*trueTemperature))
 dislViscosity = dislA * (fn.math.exp((dislE+truePressure*dislV) / (dislN*R_const*trueTemperature)) 
                          * fn.math.pow(strainRate_2nd_Invariant+tiny_strain_rate, 1./dislN-1.))
-# pureViscosity = dislViscosity
 pureViscosity = 1./(1./diffViscosity + 1./dislViscosity)
-# pureViscosity = fn.misc.min(diffViscosity, dislViscosity)
 viscosityFn = fn.misc.max(fn.misc.min(pureViscosity, maxViscosity), minViscosity)
 
 shearModulusFn = shearModulusHigh + (shearModulusLow - shearModulusHigh) * fn.math.pow(temperatureField, 2.)
@@ -600,9 +576,7 @@ def diagnose(**kwargs):
 
     pt_loc, pt_vars = getGlobalMeshVar(mesh, np.hstack((materialIndex.evaluate(mesh),
                                                         slipVelocity.evaluate(mesh))))
-    # pt_vars = getGlobalSwarmVar(np.hstack((materialIndex.data,
-    #                                        slipVelocity.evaluate(swarm))))
-    
+ 
     pt_material = pt_vars[:, 0]
     pt_slip_vel = pt_vars[:, 1]
 
@@ -826,7 +800,6 @@ if(restart_step < -1):
         diagnostics = diagnose(plot=f'vx_{flag}{step}.png')
         
         dt = dt_e*phi_dt
-        # dt = np.minimum(advector.get_max_dt(), dt)
 
         if(step == nsteps_long-1):
             save_domain_vars(step, flag, save_on='swarm')
@@ -845,7 +818,6 @@ if(restart_step < -1):
 # checkpoint(step, flag, velocity=True, pressure=True, prestress=True)
 
 flag = 's'
-# checkpoint(-1, flag, velocity=True, pressure=True, prestress=True)
 
 yieldStress = fn.misc.min(cohesionFn + frictionFn * normalStress, maxYieldStress)
 
@@ -894,7 +866,6 @@ while(step < nsteps_short):
     diagnostics = diagnose(plot=f'vx_{flag}{step}.png')
     
     dt = dt_e*phi_dt
-    # dt = np.minimum(advector.get_max_dt(), dt)
 
     if(step == nsteps_short-1):
         save_domain_vars(step, flag, save_on='swarm')
@@ -974,7 +945,6 @@ while(step < nsteps_ic):
     diagnostics = diagnose(plot=f'vx_{flag}{step}.png')
     
     dt = dt_e*phi_dt
-    # dt = np.minimum(advector.get_max_dt(), dt)
 
     if(step == nsteps_ic-1):
         save_domain_vars(step, flag, save_on='swarm')
@@ -1052,7 +1022,6 @@ solver.solve( nonLinearIterate=True, nonLinearTolerance=1e-3, nonLinearMaxIterat
 diagnostics = diagnose(plot=f'vx_{flag}{step}.png')
 
 dt = dt_e*phi_dt
-# dt = np.minimum(advector.get_max_dt(), dt)
 
 save_domain_vars(step, flag, save_on='swarm')
 
@@ -1134,7 +1103,6 @@ while(step < nsteps_post):
     diagnostics = diagnose(plot=f'vx_{flag}{step}.png')
     
     dt = dt_e*phi_dt
-    # dt = np.minimum(advector.get_max_dt(), dt)
 
     if(step == nsteps_post-1):
         save_domain_vars(step, flag, save_on='swarm')

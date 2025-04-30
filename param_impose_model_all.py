@@ -136,15 +136,12 @@ mantle_dict     = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 3.5, 'disl_E': 532e3, 'disl_V': 10e-6, 'disl_A': 2.7695e4,
                     'shear_modulus_high': 60e9, 'shear_modulus_low': 60e9,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
 shear_zone_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
-                    # 'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'diff_E': 0e3, 'diff_V': 0e-6, 'diff_A': 1e24,
-                    # 'disl_n': 2.6, 'disl_E': 230e3, 'disl_V': 4e-6, 'disl_A': 1.6623e6,
                     'disl_n': 2.3, 'disl_E': 154e3, 'disl_V': 10e-6, 'disl_A': 1.6538e7,
                     'shear_modulus_high': param_Gsz, 'shear_modulus_low': param_Gsz,
                     'cohesion': 10e6, 'max_yield_stress': param_ymax }
@@ -152,9 +149,7 @@ shear_zone_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
 crust_dict      = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
-                    # 'diff_E': 0e3, 'diff_V': 0e-6, 'diff_A': 1e24,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 2.3, 'disl_E': 154e3, 'disl_V': 4e-6, 'disl_A': 1.6538e7,
                     'shear_modulus_high': param_Gsz, 'shear_modulus_low': param_Gsz,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
@@ -162,7 +157,6 @@ west_plate_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 3.5, 'disl_E': 532e3, 'disl_V': 10e-6, 'disl_A': 2.7695e4,
                     'shear_modulus_high': param_Gw, 'shear_modulus_low': param_Gw,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
@@ -170,7 +164,6 @@ east_plate_dict = { 'density': 3300., 'diffusivity': 1e-6, 'alpha': 1.,
                     'max_viscosity': 1e24, 'min_viscosity': 1e10,
                     'diff_E': 300e3, 'diff_V': 6e-6, 'diff_A': 7.1671e10,
                     'disl_n': 3.5, 'disl_E': 540e3, 'disl_V': param_Vdisl, 'disl_A': param_Adisl,
-                    # 'disl_n': 3.5, 'disl_E': 532e3, 'disl_V': 10e-6, 'disl_A': 2.7695e4,
                     'shear_modulus_high': param_Ge, 'shear_modulus_low': param_Ge,
                     'cohesion': 100e6, 'max_yield_stress': param_ymax }
 
@@ -265,7 +258,6 @@ if((restart_step < -1) or initial_run):
         elif(xm < ridge_loc):
             temperatureField.data[idx] = 1.
         elif(xm >= ridge_loc and xm < 0.):
-            # tx = np.minimum(age_west_plate, age_max_cut)
             tx = np.minimum((xm-ridge_loc)/vel_west_plate, age_max_cut)
             temperatureField.data[idx] = plate_temp_func([zm, tx])
         elif(xm >= 0
@@ -349,23 +341,16 @@ if((restart_step < -1) or initial_run):
         elif(zp >= shear_zone_bottom_z[idx]
             and zp <= slab_top_z[idx]
             and zp >= slab_front_z[idx]
-            # and zp >= east_lithos_bottom_coords.min()
             and zp >= -param_szzmax / reference_length
             and xp >= 0):
             materialIndex.data[idx] = shear_zone.index
         elif(xp >= ridge_loc
             and xp >= -param_wpxmax / reference_length
-            # and zp > west_lithos_bottom_z[idx]*0.5
             and zp > -west_crust_depth
-            # and zp < shear_zone_bottom_z[idx]):
             and xp < 0):
             materialIndex.data[idx] = west_crust.index
         elif(xp >= ridge_loc
-            # and zp >= west_lithos_bottom_z[idx]
-            # and zp >= slab_front_z[idx]
-            # and zp < shear_zone_bottom_z[idx]):
             and zp < shear_zone_bottom_z[idx]
-            # and zp >= east_lithos_bottom_z[idx]
             and zp >= -param_wpzmax / reference_length
             and xp >= -param_wpxmax / reference_length):
             materialIndex.data[idx] = west_plate.index
@@ -374,8 +359,6 @@ if((restart_step < -1) or initial_run):
             and zp > -east_crust_depth):
             materialIndex.data[idx] = east_crust.index
         elif(xp >= slab_top_x[idx] 
-            # and zp >= east_lithos_bottom_z[idx]):
-            # and zp >= east_lithos_bottom_z[idx]
             and zp >= -param_epzmax / reference_length
             and xp <= param_epxmax / reference_length):
             materialIndex.data[idx] = east_plate.index
@@ -573,14 +556,11 @@ strainRate = fn.tensor.symmetric( velocityField.fn_gradient )
 strainRate_2nd_Invariant = fn.tensor.second_invariant(strainRate)
 tiny_strain_rate = 1e-25 * reference_time
 slipVelocity = 2. * strainRate_2nd_Invariant * shear_zone_width
-# slipVelocityLocal = 2. * strainRate_2nd_Invariant * np.average([dxdydz_min[0], dxdydz_min[-1]])
 
 depth = fn.misc.max(-fn.input()[mesh.dim-1], 0.)
 lithostaticPressure = fn.misc.max(Rb*depth, 0.)
 trueLithostaticPressure = reference_density * gravity * depth*reference_length
 trueTemperature = reference_T0 + temperatureField * (reference_T1-reference_T0)
-# adiabatic = 0.3e-3 # K/m
-# trueTemperature = reference_T0 + temperatureField * (reference_T1-reference_T0) + adiabatic * depth*reference_length
 
 factor_lithos = 0.
 factor_shear_zone = 0.95
@@ -596,7 +576,6 @@ porePressureFactor = fn.branching.conditional( [ (materialIndex < shear_zone.ind
 
 normalStressLithos = (1. - porePressureFactor) * lithostaticPressure
 normal_pressure_shear_zone = 30e6 / reference_stress
-# normalStressShearZone = fn.misc.constant(normal_pressure_shear_zone)
 normalStressShearZone = fn.misc.min(normal_pressure_shear_zone, normalStressLithos)
 normalStressTransition = ((depth-factor_trans_depth[0])
                      / (factor_trans_depth[1]-factor_trans_depth[0])
@@ -607,14 +586,11 @@ normalStress = fn.branching.conditional( [ (materialIndex < shear_zone.index, no
                                             (depth <= factor_trans_depth[1], normalStressTransition),
                                             (True, normalStressLithos) ] )
 
-# truePressure = (1. - porePressureFactor) * trueLithostaticPressure
 truePressure = normalStress * reference_stress
 diffViscosity = diffA * fn.math.exp((diffE+truePressure*diffV) / (R_const*trueTemperature))
 dislViscosity = dislA * (fn.math.exp((dislE+truePressure*dislV) / (dislN*R_const*trueTemperature)) 
                          * fn.math.pow(strainRate_2nd_Invariant+tiny_strain_rate, 1./dislN-1.))
-# pureViscosity = dislViscosity
 pureViscosity = 1./(1./diffViscosity + 1./dislViscosity)
-# pureViscosity = fn.misc.min(diffViscosity, dislViscosity)
 viscosityFn = fn.misc.max(fn.misc.min(pureViscosity, maxViscosity), minViscosity)
 
 shearModulusFn = shearModulusHigh + (shearModulusLow - shearModulusHigh) * fn.math.pow(temperatureField, 2.)
@@ -629,9 +605,7 @@ def diagnose(**kwargs):
 
     pt_loc, pt_vars = getGlobalMeshVar(mesh, np.hstack((materialIndex.evaluate(mesh),
                                                         slipVelocity.evaluate(mesh))))
-    # pt_vars = getGlobalSwarmVar(np.hstack((materialIndex.data,
-    #                                        slipVelocity.evaluate(swarm))))
-    
+
     pt_material = pt_vars[:, 0]
     pt_slip_vel = pt_vars[:, 1]
 
@@ -755,14 +729,6 @@ frictionDynCenter = fn.branching.conditional( [ (materialIndex < shear_zone.inde
                                                 (trueTemperature <= friction_trans_true_temp[3], frictionTransitionLower),
                                                 (True, friction_dyn[2]) ] )
 friction_dyn_edge = friction_st
-# friction_trans_y = np.array([-0.1, -0.1, param_l1, param_l2]) * domain_length
-# yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < friction_trans_y[0], 0.),
-#                                               (fn.input()[1] < friction_trans_y[1], 
-#                                                 (fn.input()[1]-friction_trans_y[0])/(friction_trans_y[1]-friction_trans_y[0])),
-#                                               (fn.input()[1] > friction_trans_y[3], 0.),
-#                                               (fn.input()[1] > friction_trans_y[2],
-#                                                 (friction_trans_y[3]-fn.input()[1])/(friction_trans_y[3]-friction_trans_y[2])),
-#                                               (True, 1.) ] )
 yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < param_l2,
                                                 fn.math.exp(-0.5*fn.math.pow(fn.input()[1]/param_l1, 2.)) ),
                                                 (True, 0.) ] )
@@ -797,10 +763,6 @@ if(restart_step < -1):
 
             solver = uw.systems.Solver( stokes )
 
-            # if(yres > 0 and yres < 8):
-            #     solver.set_inner_method("mumps")
-            # else:    
-            #     solver.set_inner_method("mg")
             solver.set_inner_method(inner_method)
             solver.set_penalty(1e3)
             solver.set_inner_rtol(1e-4)
@@ -862,10 +824,6 @@ if(restart_step < -1):
         step = 0
         time = 0.
 
-        # if(yres > 0 and yres < 8):
-        #     solver.set_inner_method("mumps")
-        # else:    
-        #     solver.set_inner_method("mg")
         solver.set_inner_method(inner_method)
         solver.set_penalty(1e3)
         solver.set_inner_rtol(1e-4)
@@ -941,10 +899,6 @@ if(nsteps_short > 0):
     step = 0
     time = 0.
 
-    # if(yres > 0 and yres < 8):
-    #     solver.set_inner_method("mumps")
-    # else:    
-    #     solver.set_inner_method("mg")
     solver.set_inner_method(inner_method)
     solver.set_penalty(1e1)
     solver.set_inner_rtol(1e-4)
@@ -1000,14 +954,6 @@ if(nsteps_ic > 0):
                                                     (trueTemperature <= friction_trans_true_temp[3], frictionTransitionLower),
                                                     (True, friction_dyn[2]) ] )
     friction_dyn_edge = friction_st
-    # friction_trans_y = np.array([-0.1, -0.1, param_l1, param_l2]) * domain_length
-    # yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < friction_trans_y[0], 0.),
-    #                                             (fn.input()[1] < friction_trans_y[1], 
-    #                                                 (fn.input()[1]-friction_trans_y[0])/(friction_trans_y[1]-friction_trans_y[0])),
-    #                                             (fn.input()[1] > friction_trans_y[3], 0.),
-    #                                             (fn.input()[1] > friction_trans_y[2],
-    #                                                 (friction_trans_y[3]-fn.input()[1])/(friction_trans_y[3]-friction_trans_y[2])),
-    #                                             (True, 1.) ] )
     yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < param_l2,
                                                 fn.math.exp(-0.5*fn.math.pow(fn.input()[1]/param_l1, 2.)) ),
                                                 (True, 0.) ] )
@@ -1105,14 +1051,6 @@ if(impose_event):
                                                     (trueTemperature <= friction_trans_true_temp[3], frictionTransitionLower),
                                                     (True, friction_dyn[2]) ] )
     friction_dyn_edge = friction_st
-    # friction_trans_y = np.array([-0.1, -0.1, param_l1, param_l2]) * domain_length
-    # yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < friction_trans_y[0], 0.),
-    #                                             (fn.input()[1] < friction_trans_y[1], 
-    #                                                 (fn.input()[1]-friction_trans_y[0])/(friction_trans_y[1]-friction_trans_y[0])),
-    #                                             (fn.input()[1] > friction_trans_y[3], 0.),
-    #                                             (fn.input()[1] > friction_trans_y[2],
-    #                                                 (friction_trans_y[3]-fn.input()[1])/(friction_trans_y[3]-friction_trans_y[2])),
-    #                                             (True, 1.) ] )
     yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < param_l2,
                                                 fn.math.exp(-0.5*fn.math.pow(fn.input()[1]/param_l1, 2.)) ),
                                                 (True, 0.) ] )
@@ -1212,14 +1150,6 @@ while(step < nsteps_post):
                                                     (trueTemperature <= friction_trans_true_temp[3], frictionTransitionLower),
                                                     (True, friction_dyn[2]) ] )
     friction_dyn_edge = friction_st
-    # friction_trans_y = np.array([-0.1, -0.1, param_l1, param_l2]) * domain_length
-    # yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < friction_trans_y[0], 0.),
-    #                                             (fn.input()[1] < friction_trans_y[1], 
-    #                                                 (fn.input()[1]-friction_trans_y[0])/(friction_trans_y[1]-friction_trans_y[0])),
-    #                                             (fn.input()[1] > friction_trans_y[3], 0.),
-    #                                             (fn.input()[1] > friction_trans_y[2],
-    #                                                 (friction_trans_y[3]-fn.input()[1])/(friction_trans_y[3]-friction_trans_y[2])),
-    #                                             (True, 1.) ] )
     yFactorFriction = fn.branching.conditional( [ (fn.input()[1] < param_l2,
                                                 fn.math.exp(-0.5*fn.math.pow(fn.input()[1]/param_l1, 2.)) ),
                                                 (True, 0.) ] )
