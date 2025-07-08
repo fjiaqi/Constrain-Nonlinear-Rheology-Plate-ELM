@@ -6,4 +6,6 @@ output*
 archives*
 notebooks*
 figures*
+res*
+*.png
 *.batch

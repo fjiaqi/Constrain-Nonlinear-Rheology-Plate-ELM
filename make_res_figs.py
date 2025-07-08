@@ -53,7 +53,6 @@ for i in range(len(dir_list)):
     visc_p_b = load_res_npz(f'./res/{dir_list[i]}', 'visc_p_b')
     visc_z = load_res_npz(f'./res/{dir_list[i]}', 'visc_z')
     ax.plot(np.power(10, visc_i_b), visc_z, c=colors[i], lw=3, label=f'${w_list[i]}$')
-    print(f'{w_list[i]}: {10**visc_i_b.min()}, {10**visc_p_b.min()}')
 
 ax.set_xlim(1e17, 1e24)
 ax.set_ylim(-800, 0)
