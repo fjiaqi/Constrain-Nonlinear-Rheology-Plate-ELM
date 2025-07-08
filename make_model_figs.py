@@ -6,7 +6,7 @@ pv.set_jupyter_backend('static')
 pv.global_theme.font.family = 'arial'
 
 # %%
-output_dir = '/home/x-jqfang/scratch/model_2504_bkp/basics/data'
+output_dir = '/home/x-jqfang/scratch/model_2504/basics/data'
 
 with h5py.File(f'{output_dir}/mesh_0.h5', 'r') as file:
     vertices = np.array(file['vertices'])
