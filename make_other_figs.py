@@ -17,7 +17,6 @@ sys.path.append('./utils/')
 from references import *
 from domain import *
 from structures import *
-from materials import *
 from diag_utils import *
 
 params = {
@@ -75,7 +74,7 @@ def load_sz_args(output_dir, step, flag):
 
     with h5py.File(f'{output_dir}/data/tracer_material_0.h5', 'r') as h5:
         mesh_mat = h5['data'][...]
-        arg_sz = np.where(mesh_mat == shear_zone.index)[0]
+        arg_sz = np.where(mesh_mat == 3)[0]
 
     with h5py.File(f'{output_dir}/data/tracer_velocity_{flag}{step}.h5', 'r') as h5:
         mesh_vel = h5['data'][...]
@@ -103,7 +102,7 @@ npz_vars = npz['vars']
 npz_mat = npz_vars[:, 0]
 npz_fric = npz_vars[:, 8]
 
-npz_arg_sz = np.where(npz_mat == shear_zone.index)[0]
+npz_arg_sz = np.where(npz_mat == 3)[0]
 for j in range(len(sz_fric_zbins)-1):
     npz_arg_bin = np.where((npz_loc[npz_arg_sz, -1] >= sz_fric_zbins[j]) & (npz_loc[npz_arg_sz, -1] <= sz_fric_zbins[j+1]))[0]
     sz_fric_center[j] = np.mean(npz_fric[npz_arg_sz][npz_arg_bin])

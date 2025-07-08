@@ -30,7 +30,7 @@ meshfile_2d = f'{dir_2d}/data/mesh_0.h5'
 vfile_2d = f'{dir_2d}/data/velocity_l20.h5'
 pfile_2d = f'{dir_2d}/data/pressure_l20.h5'
 
-dir_3d = '/home/x-jqfang/scratch/3d_2502/basics'
+dir_3d = '/home/x-jqfang/scratch/model_2504/basics'
 meshfile_3d = f'{dir_3d}/data/mesh_0.h5'
 
 output_dir_3d = dir_2d

@@ -11,7 +11,6 @@ sys.path.append('./utils/')
 from references import *
 from domain import *
 from structures import *
-from materials import *
 from diag_utils import *
 
 logger = logging.getLogger()

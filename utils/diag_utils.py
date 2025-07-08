@@ -55,21 +55,6 @@ def second_invariant(A, dim=2):
         raise ValueError('dim must be 2 or 3')
     return res
 
-def SHmax(A, dim=2):
-    if(dim == 2):
-        tau11 = A[:, 0]
-        tau22 = A[:, 1]
-        tau12 = A[:, 2]
-        l1 = (tau11 + tau22 - np.sqrt((tau11-tau22)**2 + 4*tau12**2)) / 2.
-        angle1 = np.arctan2(tau11-l1, -tau12)
-    elif(dim == 3):
-        # TODO: check this
-        angle1 = np.zeros(A.shape[0])
-    else:
-        raise ValueError('dim must be 2 or 3')
-    return angle1
-
-
 def plate_quantity(var, x, xmin, xmax, **kwargs):
     arg_p = np.where((x>xmin) & (x<xmax))[0]
     res = np.array([np.average(var[arg_p])])

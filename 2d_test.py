@@ -20,6 +20,7 @@ from diag_utils import *
 
 plt.rcParams['font.size'] = 16
 
+# Key parameters to vary
 if(len(sys.argv) > 1):
     A = sys.argv[1]
     V = sys.argv[2]
@@ -31,26 +32,26 @@ else:
     Gw = 80
     Ge = 40
 
-param_Adisl = 1.4485e4*float(A)
-param_Vdisl = 1e-6*float(V)
+param_Adisl = 1.4485e4*float(A) # Prefactor for dislocation creep
+param_Vdisl = 1e-6*float(V) # Activation volume for dislocation creep
 # 2--7.8, 1--10.6, 0.5--13.4, 0.25--6.1
-param_ymax = 200e6
-param_Gw = 1e9*float(Gw)
-param_Ge = 1e9*float(Ge)
-param_Gsz = 20e9
-param_wpxmax = 100e3
-param_wpzmax = 80e3
-param_epxmax = 400e3
-param_epzmax = 80e3
-param_szzmax = 120e3
-param_l1 = 0.2
-param_l2 = 0.8
-param_fst = 0.5
-param_fstic = param_fst+0.05
-param_fdynmid = 0.2
-param_fdynup = 0.6
-param_fdynmidr = 0.4
-param_fdynupr = 0.05
+param_ymax = 200e6 # Bulk yield stress
+param_Gw = 1e9*float(Gw) # Shear modulus of incoming plate
+param_Ge = 1e9*float(Ge) # Shear modulus of overriding plate
+param_Gsz = 20e9 # Shear modulus of shear zone
+param_wpxmax = 100e3 # Width of shear modulus variation in incoming plate
+param_wpzmax = 80e3 # Depth of shear modulus variation in incoming plate
+param_epxmax = 400e3 # Width of shear modulus variation in overriding plate
+param_epzmax = 80e3 # Depth of shear modulus variation in overriding plate
+param_szzmax = 120e3 # Depth of shear zone
+param_l1 = 0.2 # Characteristic along-strike length of friction change (non-dimensional)
+param_l2 = 0.8 # Cut-off along-strike length of friction change (non-dimensional)
+param_fst = 0.5 # Initial friction
+param_fstic = param_fst+0.05 # Pre-seismic friction
+param_fdynmid = 0.2 # Co-seismic friction (seismogenic zone)
+param_fdynup = 0.6 # Co-seismic friction (updip)
+param_fdynmidr = 0.4 # Post-seismic friction recovery rate (seismogenic zone)
+param_fdynupr = 0.05 # Post-seismic friction recovery rate (updip)
 
 output_dir = Path(f'/home/x-jqfang/scratch/model_2504/2d_A{A}_V{V}_Gw{Gw}_Ge{Ge}/')
 data_dir = output_dir / 'data'
@@ -84,6 +85,7 @@ dt_e_ratio_long = 0.1
 dt_e_short = 1. * s_per_year / reference_time
 dt_e_event = 1. * s_per_year / reference_time
 
+# Materials
 class Material:
     def __init__(self, index, label, 
                  density, diffusivity, alpha,
@@ -171,6 +173,7 @@ east_crust = Material(index=6, label='east_crust', **east_plate_dict)
 lmantle    = Material(index=7, label='lmantle', **lmantle_dict)
 
 
+# Mesh, swarm
 if(restart_step < -1):
     if(yres > 0):
         mesh = uw.mesh.FeMesh_Cartesian( elementType = ("Q1/dQ0"), 
@@ -219,6 +222,7 @@ swarm = uw.swarm.Swarm( mesh=mesh )
 advector = uw.systems.SwarmAdvector( swarm=swarm, velocityField=velocityField, order=2 )
 swarm.allow_parallel_nn = True
 
+# Velocity, pressure, temperature, material index, previous stress
 if(restart_step < -1):
     velocityField.data[:] = 0.
     pressureField.data[:] = 0.
@@ -360,6 +364,7 @@ else:
     previousStress.load(str(input_dir / f'prestress_{restart_flag}{restart_step}.h5'))
 
 
+# Check mesh resolution
 dx_local = np.diff(np.unique(mesh.data[:, 0]))
 dz_local = np.diff(np.unique(mesh.data[:, -1]))
 if(yres > 0):
@@ -383,6 +388,7 @@ step = 0
 time = 0.
 
 
+# Boundary conditions
 appliedTraction = uw.mesh.MeshVariable( mesh=mesh, nodeDofCount=mesh.dim )
 appliedTraction.data[:] = 0.
 
@@ -419,6 +425,7 @@ else:
                                            indexSetsPerDof=(jWalls, iWalls) )
 
 
+# Tracer swarms
 surfaceSwarm = uw.swarm.Swarm(mesh)
 advector_surface = uw.systems.SwarmAdvector( swarm=surfaceSwarm, velocityField=velocityField, order=2 )
 xres_surface = 501
@@ -449,6 +456,7 @@ tracerViscosity = tracerSwarm.add_variable( dataType="double", count=1 )
 tracerStrainRate = tracerSwarm.add_variable( dataType="double", count=1 )
 tracerStress = tracerSwarm.add_variable( dataType="double", count=1 )
 
+# Material properties
 boussinesq = 1.
 
 densityMap = { material.index : material.density - boussinesq for material in material_list }
@@ -514,6 +522,7 @@ lithostaticPressure = fn.misc.max(Rb*depth, 0.)
 trueLithostaticPressure = reference_density * gravity * depth*reference_length
 trueTemperature = reference_T0 + temperatureField * (reference_T1-reference_T0)
 
+# Initial friction
 friction_st = param_fst
 friction_dyn = np.array([friction_st, friction_st, friction_st])
 friction_dyn_lithos = 0.6
@@ -533,6 +542,7 @@ frictionDyn = fn.branching.conditional( [ (materialIndex < shear_zone.index, fri
                                           (True, friction_dyn[2]) ] )
 frictionFn = frictionDyn
 
+# Pore pressure, normal stress
 factor_lithos = 0.
 factor_shear_zone = 0.95
 factor_trans_depth = np.array([60e3, 80e3]) / reference_length
@@ -557,6 +567,7 @@ normalStress = fn.branching.conditional( [ (materialIndex < shear_zone.index, no
                                             (depth <= factor_trans_depth[1], normalStressTransition),
                                             (True, normalStressLithos) ] )
 
+# Rheology
 truePressure = normalStress * reference_stress
 diffViscosity = diffA * fn.math.exp((diffE+truePressure*diffV) / (R_const*trueTemperature))
 dislViscosity = dislA * (fn.math.exp((dislE+truePressure*dislV) / (dislN*R_const*trueTemperature)) 
@@ -711,6 +722,9 @@ checkpoint(0, mesh=True, temperature=True, swarm=True, material=True)
 trace(0, swarm=True, material=True, modulus=True, temperature=True)
 
 
+#################################################################################################
+# Long-term stage: to create initial conditions
+#################################################################################################
 if(restart_step < -1):
     if(start_viscous):
         flag = 'v'
@@ -815,70 +829,10 @@ if(restart_step < -1):
         step = step + 1
         time = time + dt
 
-# checkpoint(step, flag, velocity=True, pressure=True, prestress=True)
 
-flag = 's'
-
-yieldStress = fn.misc.min(cohesionFn + frictionFn * normalStress, maxYieldStress)
-
-dt_e = dt_e_short
-
-strainRateEff = strainRate + previousStress / (2. * shearModulusFn * dt_e)
-strainRateEff_2nd_Invariant = fn.tensor.second_invariant(strainRateEff)
-
-elastViscosity = dt_e / (1./shearModulusFn + dt_e/viscosityFn)
-plastViscosity = yieldStress / (2.*strainRateEff_2nd_Invariant+tiny_strain_rate)
-viscosityType = fn.branching.conditional( [ (plastViscosity < elastViscosity, 0),
-                                            (dislViscosity < diffViscosity, 1), 
-                                            (True, 2) ] )
-viscosityEff = fn.exception.SafeMaths(fn.misc.min(elastViscosity, plastViscosity))
-
-viscousStress      = 2. * viscosityEff * strainRate
-tauHistoryFn       = viscosityEff / ( shearModulusFn * dt_e ) * previousStress
-viscoelasticStress = 2. * viscosityEff * strainRateEff
-stressFn           = viscoelasticStress
-
-stokes = uw.systems.Stokes( velocityField = velocityField,
-                            pressureField = pressureField,
-                            voronoi_swarm = swarm,
-                            conditions    = [velBC, trBC],
-                            fn_viscosity  = viscosityEff,
-                            fn_bodyforce  = buoyancyFn,
-                            fn_stresshistory = tauHistoryFn )
-
-solver = uw.systems.Solver( stokes )
-
-
-phi_dt = 1.
-dt = dt_e*phi_dt
-
-nsteps_short = 11
-step = 0
-time = 0.
-
-solver.set_inner_method("mg")
-solver.set_penalty(1e1)
-# solver.set_inner_rtol(1e-4)
-
-while(step < nsteps_short):
-    solver.solve( nonLinearIterate=True, nonLinearTolerance=1e-3, nonLinearMaxIterations=500 )
-    
-    diagnostics = diagnose(plot=f'vx_{flag}{step}.png')
-    
-    dt = dt_e*phi_dt
-
-    if(step == nsteps_short-1):
-        save_domain_vars(step, flag, save_on='swarm')
-
-    stress_data = stressFn.evaluate(swarm)
-    previousStress.data[:] = dt/dt_e * stress_data[:] + (1.-dt/dt_e) * previousStress.data[:]
-
-    if(step % 1 == 0):
-        checkpoint(step, flag, velocity=True, pressure=True, prestress=True)
-
-    step = step + 1
-    time = time + dt
-
+#################################################################################################
+# Pre-seismic stage
+#################################################################################################
 flag = 'i'
 nsteps_ic = 11
 step = 0
@@ -958,6 +912,10 @@ while(step < nsteps_ic):
     step = step + 1
     time = time + dt
 
+
+#################################################################################################
+# Co-seismic stage
+#################################################################################################
 flag = 'c'
 step = 0
 time = 0.
@@ -1033,88 +991,6 @@ if(step % 1 == 0):
 
 step = step + 1
 time = time + dt
-
-
-flag = 'p'
-nsteps_post = 5
-step = 0
-time = 0.
-
-while(step < nsteps_post):
-    friction_st = param_fstic
-    up_fric = np.maximum(param_fdynup - (step+1)*param_fdynupr, friction_st)
-    mid_fric = np.minimum(param_fdynmid + (step+1)*param_fdynmidr, friction_st)
-    friction_dyn = np.array([up_fric, mid_fric, friction_st])
-    friction_dyn_lithos = 0.6
-    friction_trans_true_temp = np.array([373., 423., 623., 723.])
-    frictionTransitionUpper = ((trueTemperature-friction_trans_true_temp[0])
-                                / (friction_trans_true_temp[1]-friction_trans_true_temp[0])
-                                * (friction_dyn[1]-friction_dyn[0])) + friction_dyn[0]
-    frictionTransitionLower = ((trueTemperature-friction_trans_true_temp[2])
-                                / (friction_trans_true_temp[3]-friction_trans_true_temp[2])
-                                * (friction_dyn[2]-friction_dyn[1])) + friction_dyn[1]
-    frictionDyn = fn.branching.conditional( [ (materialIndex < shear_zone.index, friction_dyn_lithos),
-                                            (materialIndex > shear_zone.index, friction_dyn_lithos),
-                                            (trueTemperature <= friction_trans_true_temp[0], friction_dyn[0]),
-                                            (trueTemperature <= friction_trans_true_temp[1], frictionTransitionUpper),
-                                            (trueTemperature <= friction_trans_true_temp[2], friction_dyn[1]),
-                                            (trueTemperature <= friction_trans_true_temp[3], frictionTransitionLower),
-                                            (True, friction_dyn[2]) ] )
-    frictionFn = frictionDyn
-
-    yieldStress = fn.misc.min(cohesionFn + frictionFn * normalStress, maxYieldStress)
-
-    dt_e = dt_e_event
-
-    strainRateEff = strainRate + previousStress / (2. * shearModulusFn * dt_e)
-    strainRateEff_2nd_Invariant = fn.tensor.second_invariant(strainRateEff)
-
-    elastViscosity = dt_e / (1./shearModulusFn + dt_e/viscosityFn)
-    plastViscosity = yieldStress / (2.*strainRateEff_2nd_Invariant+tiny_strain_rate)
-    viscosityType = fn.branching.conditional( [ (plastViscosity < elastViscosity, 0),
-                                                (dislViscosity < diffViscosity, 1), 
-                                                (True, 2) ] )
-    viscosityEff = fn.exception.SafeMaths(fn.misc.min(elastViscosity, plastViscosity))
-
-    viscousStress      = 2. * viscosityEff * strainRate
-    tauHistoryFn       = viscosityEff / ( shearModulusFn * dt_e ) * previousStress
-    viscoelasticStress = 2. * viscosityEff * strainRateEff
-    stressFn           = viscoelasticStress
-
-    stokes = uw.systems.Stokes( velocityField = velocityField,
-                                pressureField = pressureField,
-                                voronoi_swarm = swarm,
-                                conditions    = [velBC, trBC],
-                                fn_viscosity  = viscosityEff,
-                                fn_bodyforce  = buoyancyFn,
-                                fn_stresshistory = tauHistoryFn )
-
-    solver = uw.systems.Solver( stokes )
-
-    phi_dt = 1.
-    dt = dt_e*phi_dt
-
-    solver.set_inner_method("mg")
-    solver.set_penalty(1e1)
-    # solver.set_inner_rtol(1e-4)
-
-    solver.solve( nonLinearIterate=True, nonLinearTolerance=1e-3, nonLinearMaxIterations=500 )
-    
-    diagnostics = diagnose(plot=f'vx_{flag}{step}.png')
-    
-    dt = dt_e*phi_dt
-
-    if(step == nsteps_post-1):
-        save_domain_vars(step, flag, save_on='swarm')
-    
-    stress_data = stressFn.evaluate(swarm)
-    previousStress.data[:] = dt/dt_e * stress_data[:] + (1.-dt/dt_e) * previousStress.data[:]
-
-    if(step % 1 == 0):
-        checkpoint(step, flag, velocity=True, pressure=True, prestress=True)
-
-    step = step + 1
-    time = time + dt
 
 if(uw.mpi.rank == 0):
     logger.debug(f'Completed using {uw.mpi.size} threads\n')

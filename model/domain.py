@@ -18,9 +18,9 @@ domain_width = domain_width_east + domain_width_west
 domain_depth = 800e3 / reference_length
 lmantle_top_depth = 660e3 / reference_length
 air_depth = 0. / reference_length
-domain_length = 5e3 / reference_length
+domain_length = 2000e3 / reference_length
 
 xres = 1024
-zres = 256
-yres = 0
+zres = 128
+yres = 256
 restart_step = -100
